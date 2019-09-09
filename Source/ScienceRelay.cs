@@ -41,7 +41,7 @@ namespace ScienceRelay
 {
 	[KSPAddon(KSPAddon.Startup.Flight, false)]
 	public class ScienceRelay : MonoBehaviour
-    {
+	{
 		private static Sprite transferNormal;
 		private static Sprite transferHighlight;
 		private static Sprite transferActive;
@@ -379,8 +379,7 @@ namespace ScienceRelay
 											},
 											160,
 											30,
-											true,
-											null);
+											true, button);
 				}
 				else
 				{
@@ -526,8 +525,10 @@ namespace ScienceRelay
 
 		private void transferToVessel(ScienceRelayData RelayData)
 		{
-			if (resultsDialog != null)
-				resultsDialog.Dismiss();
+			//if (resultsDialog != null) resultsDialog.Dismiss();  
+			// JLB -- Leaves dialog up for other experiments
+			if (resultsDialog != null && transferAll) resultsDialog.Dismiss();
+			if (resultsDialog != null && !transferAll) resultsDialog.currentPage.OnKeepData(resultsDialog.currentPage.pageData);
 
 			if (RelayData._host == null || RelayData._data == null || RelayData._target == null || RelayData._source == null)
 				return;
@@ -605,7 +606,8 @@ namespace ScienceRelay
 						break;
 				}
 
-				IScienceDataTransmitter bestTransmitter = ScienceUtil.GetBestTransmitter(RelayData._source.FindPartModulesImplementing<IScienceDataTransmitter>());
+				IScienceDataTransmitter bestTransmitter = ScienceUtil.GetBestTransmitter(RelayData._source);
+				//IScienceDataTransmitter bestTransmitter = ScienceUtil.GetBestTransmitter(RelayData._source.FindPartModulesImplementing<IScienceDataTransmitter>());
 
 				if (bestTransmitter == null)
 				{
@@ -980,13 +982,13 @@ namespace ScienceRelay
 			if (vessel == null)
 				return false;
 
-            //RelayLog("Finding Connected Vessels...");
+			//RelayLog("Finding Connected Vessels...");
 
 			if (CommNetScenario.CommNetEnabled)// && !CNConstellationLoaded)
 				connectedVessels = getConnectedVessels(vessel);
 			else
 			{
-                //RelayLog("No connection status required");
+				//RelayLog("No connection status required");
 
 				for (int i = FlightGlobals.Vessels.Count - 1; i >= 0; i--)
 				{
@@ -1024,7 +1026,7 @@ namespace ScienceRelay
 
 			List<KeyValuePair<CommNode, double>> checkNodes = new List<KeyValuePair<CommNode, double>>();
 
-            //RelayLog("Parsing vessels for connection");
+			//RelayLog("Parsing vessels for connection");
 
 			if (v.connection != null)
 			{
@@ -1035,13 +1037,13 @@ namespace ScienceRelay
 					if (!settings.requireRelay)
 						checkNodes.Add(new KeyValuePair<CommNode, double>(source, 1));
 
-                    //RelayLog("Source node valid");
+					//RelayLog("Source node valid");
 
 					CommNetwork net = v.connection.Comm.Net;
 
 					if (net != null)
 					{
-                        //RelayLog("Source network valid");
+						//RelayLog("Source network valid");
 
 						for (int i = FlightGlobals.Vessels.Count - 1; i >= 0; i--)
 						{
@@ -1061,13 +1063,13 @@ namespace ScienceRelay
 							if (otherVessel.connection == null || otherVessel.connection.Comm == null)
 								continue;
 
-                            //RelayLog("Vessel status check for\n---- {0} ----", otherVessel.vesselName);
+							//RelayLog("Vessel status check for\n---- {0} ----", otherVessel.vesselName);
 
-                            if (otherVessel.connection.ControlPath != null && otherVessel.connection.ControlPath.First != null)
-                            {
-                                if (otherVessel.connection.ControlPath.First.cost < 0.0001)
-                                    continue;
-                            }
+							if (otherVessel.connection.ControlPath != null && otherVessel.connection.ControlPath.First != null)
+							{
+								if (otherVessel.connection.ControlPath.First.cost < 0.0001)
+									continue;
+							}
 
 							if (!net.FindPath(source, pathCache, otherVessel.connection.Comm))
 								continue;
@@ -1078,11 +1080,11 @@ namespace ScienceRelay
 							if (pathCache.Count <= 0)
 								continue;
 
-                            //RelayLog("Vessel network path valid");
+							//RelayLog("Vessel network path valid");
 
 							if (!settings.requireRelay)
 							{
-                                //RelayLog("Searching for direct paths");
+								//RelayLog("Searching for direct paths");
 
 								double totalStrength = 1;
 
@@ -1094,7 +1096,7 @@ namespace ScienceRelay
 
 									totalStrength *= link.signalStrength;
 
-                                    //RelayLog("Checking ling status...");
+									//RelayLog("Checking ling status...");
 
 									if (!link.a.isHome && !updateCommNode(checkNodes, link.a, totalStrength))
 										checkNodes.Add(new KeyValuePair<CommNode, double>(link.a, totalStrength));
@@ -1114,14 +1116,14 @@ namespace ScienceRelay
 
 							s = source.scienceCurve.Evaluate(s);
 
-                            //RelayLog("Vessel has valid containers - Connection status: {0:N2}", s);
+							//RelayLog("Vessel has valid containers - Connection status: {0:N2}", s);
 
 							connections.Add(new KeyValuePair<Vessel, double>(otherVessel, s + 1));
 						}
 
 						if (!settings.requireRelay)
 						{
-                            //RelayLog("Checking direct connections...");
+							//RelayLog("Checking direct connections...");
 
 							for (int k = checkNodes.Count - 1; k >= 0; k--)
 							{
@@ -1132,7 +1134,7 @@ namespace ScienceRelay
 								if (node.isHome)
 									continue;
 
-                                //RelayLog("Check node: {0}", k);
+								//RelayLog("Check node: {0}", k);
 
 								for (int l = FlightGlobals.Vessels.Count - 1; l >= 0; l--)
 								{
@@ -1157,7 +1159,7 @@ namespace ScienceRelay
 									if (otherComm.antennaRelay.power > 0)
 										continue;
 
-                                    //RelayLog("Antenna valid for vessel\n---- {0} ----", otherVessel.vesselName);
+									//RelayLog("Antenna valid for vessel\n---- {0} ----", otherVessel.vesselName);
 
 									if (settings.requireMPL && !VesselUtilities.VesselHasModuleName("ModuleScienceLab", otherVessel))
 										continue;
@@ -1177,7 +1179,7 @@ namespace ScienceRelay
 
 									power = source.scienceCurve.Evaluate(power);
 
-                                    //RelayLog("Vessel not occluded, with signal strength: {0:N2}", power);
+									//RelayLog("Vessel not occluded, with signal strength: {0:N2}", power);
 
 									bool flag = false;
 
@@ -1205,11 +1207,11 @@ namespace ScienceRelay
 										break;
 									}
 
-                                    if (!flag)
-                                    {
-                                        //RelayLog("Adding direct connection vessel");
-                                        connections.Add(new KeyValuePair<Vessel, double>(otherVessel, power + 1));
-                                    }
+									if (!flag)
+									{
+										//RelayLog("Adding direct connection vessel");
+										connections.Add(new KeyValuePair<Vessel, double>(otherVessel, power + 1));
+									}
 								}
 							}
 						}
@@ -1229,7 +1231,7 @@ namespace ScienceRelay
 				if (node.Key != newNode)
 					continue;
 
-                //RelayLog("Updating Comm Node - New Signal: {0:N2} - Old Value: {1:N2}", signal, node.Value);
+				//RelayLog("Updating Comm Node - New Signal: {0:N2} - Old Value: {1:N2}", signal, node.Value);
 
 				if (signal > node.Value)
 					nodes[i] = new KeyValuePair<CommNode, double>(node.Key, signal);
@@ -1242,7 +1244,7 @@ namespace ScienceRelay
 
 		private bool isOccluded(CommNode a, CommNode b, double dist, CommNetwork net)
 		{
-            //RelayLog("Checking connection occlusion");
+			//RelayLog("Checking connection occlusion");
 
 			bool? occlusion = null;
 
@@ -1267,7 +1269,7 @@ namespace ScienceRelay
 
 		private double directConnection(CommNode a, CommNode b, double dist, bool source, double strength)
 		{
-            //RelayLog("Checking direct connection strength");
+			//RelayLog("Checking direct connection strength");
 
 			double plasmaMult = a.GetSignalStrengthMultiplier(b) * b.GetSignalStrengthMultiplier(a);
 
@@ -1340,5 +1342,5 @@ namespace ScienceRelay
 		{
 			Debug.Log(string.Format("[Science_Relay] " + s, o));
 		}
-    }
+	}
 }

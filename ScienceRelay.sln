@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29215.179
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScienceRelay", "Source\ScienceRelay.csproj", "{0090F4EE-6308-4F21-B9BD-C3FA2A4B9E95}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0090F4EE-6308-4F21-B9BD-C3FA2A4B9E95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0090F4EE-6308-4F21-B9BD-C3FA2A4B9E95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0090F4EE-6308-4F21-B9BD-C3FA2A4B9E95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0090F4EE-6308-4F21-B9BD-C3FA2A4B9E95}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F948EE5-8482-4269-8FCD-A177F1FC455A}
+	EndGlobalSection
+EndGlobal
