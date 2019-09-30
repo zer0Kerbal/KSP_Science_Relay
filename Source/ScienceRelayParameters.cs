@@ -1,4 +1,5 @@
 ﻿#region license
+
 /*The MIT License (MIT)
 
 ScienceRelayParameters - In game settings for Science Transfer
@@ -23,9 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 #endregion
 
-using KSP.Localization;
+using System.Reflection;
 
 namespace ScienceRelay
 {
@@ -33,21 +35,37 @@ namespace ScienceRelay
 	{
 		[GameParameters.CustomParameterUI("#autoLOC_ScienceRelay_Settings_MPL", autoPersistance = true)]
 		public bool requireMPL = true;
-		[GameParameters.CustomParameterUI("#autoLOC_ScienceRelay_Settings_Relay", autoPersistance = true)]
-		public bool requireRelay = false;
-		[GameParameters.CustomParameterUI("#autoLOC_ScienceRelay_Settings_Boost", toolTip = "#autoLOC_ScienceRelay_Settings_Tooltip_Boost", autoPersistance = true)]
-		public bool transmissionBoost = true;
+
 		[GameParameters.CustomParameterUI("#autoLOC_ScienceRelay_Settings_MPLBoost", autoPersistance = true)]
-		public bool requireMPLForBoost = false;
-		[GameParameters.CustomFloatParameterUI("#autoLOC_ScienceRelay_Settings_Penalty", toolTip = "#autoLOC_ScienceRelay_Settings_Tooltip_Penalty", asPercentage = true, minValue = 0, maxValue = 1, displayFormat = "N2", autoPersistance = true)]
-		public float transmissionPenalty = 0.5f;
+		public bool requireMPLForBoost;
+
+		[GameParameters.CustomParameterUI("#autoLOC_ScienceRelay_Settings_Relay", autoPersistance = true)]
+		public bool requireRelay;
+
 		[GameParameters.CustomParameterUI("#autoLOC_ScienceRelay_Settings_Warning", toolTip = "#autoLOC_ScienceRelay_Settings_Tooltip_Warning", autoPersistance = true)]
 		public bool showTransmitWarning;
 
+		[GameParameters.CustomParameterUI("#autoLOC_ScienceRelay_Settings_Boost", toolTip = "#autoLOC_ScienceRelay_Settings_Tooltip_Boost", autoPersistance = true)]
+		public bool transmissionBoost = true;
+
+		[GameParameters.CustomFloatParameterUI("#autoLOC_ScienceRelay_Settings_Penalty", toolTip = "#autoLOC_ScienceRelay_Settings_Tooltip_Penalty", asPercentage = true, minValue = 0, maxValue = 1, displayFormat = "N2", autoPersistance = true)]
+		public float transmissionPenalty = 0.5f;
+
+		public override GameParameters.GameMode GameMode => GameParameters.GameMode.SCIENCE | GameParameters.GameMode.CAREER;
+
+		public override bool HasPresets => true;
+
+		public override string Section => "DMagic Mods";
+
+		public override string DisplaySection => "DMagic Mods";
+
+		public override int SectionOrder => 2;
+
+		public override string Title => "Science Relay";
+
 		public override void SetDifficultyPreset(GameParameters.Preset preset)
 		{
-			switch (preset)
-			{
+			switch (preset) {
 				case GameParameters.Preset.Easy:
 					transmissionBoost = true;
 					requireMPLForBoost = false;
@@ -81,44 +99,17 @@ namespace ScienceRelay
 			}
 		}
 
-		public override bool Enabled(System.Reflection.MemberInfo member, GameParameters parameters)
+		public override bool Enabled(MemberInfo member, GameParameters parameters)
 		{
-			if (member.Name == "requireMPLForBoost")
+			if (member.Name == "requireMPLForBoost") {
 				return !requireMPL && transmissionBoost;
-			else if (member.Name == "transmissionPenalty")
+			}
+
+			if (member.Name == "transmissionPenalty") {
 				return transmissionBoost;
+			}
 
 			return base.Enabled(member, parameters);
-		}
-
-		public override GameParameters.GameMode GameMode
-		{
-			get { return GameParameters.GameMode.SCIENCE | GameParameters.GameMode.CAREER; }
-		}
-
-		public override bool HasPresets
-		{
-			get { return true; }
-		}
-
-		public override string Section
-		{
-			get { return "DMagic Mods"; }
-		}
-
-		public override string DisplaySection
-		{
-			get { return "DMagic Mods"; }
-		}
-
-		public override int SectionOrder
-		{
-			get { return 2; }
-		}
-
-		public override string Title
-		{
-			get { return "Science Relay"; }
 		}
 	}
 }

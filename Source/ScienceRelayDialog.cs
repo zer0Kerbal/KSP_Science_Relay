@@ -1,4 +1,5 @@
 ﻿#region license
+
 /*The MIT License (MIT)
 
 ScienceRelayDialog - A small script attached to the Experiment Results Dialog prefab
@@ -23,11 +24,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 #endregion
 
+using KSP.UI.Screens.Flight.Dialogs;
 using UnityEngine;
 using UnityEngine.UI;
-using KSP.UI.Screens.Flight.Dialogs;
 
 namespace ScienceRelay
 {
@@ -36,32 +38,33 @@ namespace ScienceRelay
 		public static EventData<ExperimentsResultDialog> onDialogSpawn = new EventData<ExperimentsResultDialog>("onDialogSpawn");
 		public static EventData<ExperimentsResultDialog> onDialogClose = new EventData<ExperimentsResultDialog>("onDialogClose");
 
-		private ExperimentsResultDialog dialog;
-
 		public Button buttonNext;
 		public Button buttonPrev;
 		public Button buttonTransfer;
+
+		private ExperimentsResultDialog dialog;
 
 		private void Start()
 		{
 			dialog = gameObject.GetComponentInParent<ExperimentsResultDialog>();
 
-			if (dialog == null)
-			{
+			if (dialog == null) {
 				Destroy(this);
 				return;
 			}
 
-			if (ScienceRelay.Instance != null)
-			{
-				if (buttonNext != null)
+			if (ScienceRelay.Instance != null) {
+				if (buttonNext != null) {
 					buttonNext.onClick.AddListener(ScienceRelay.Instance.onPageChange);
+				}
 
-				if (buttonPrev != null)
+				if (buttonPrev != null) {
 					buttonPrev.onClick.AddListener(ScienceRelay.Instance.onPageChange);
+				}
 
-				if (buttonTransfer != null)
+				if (buttonTransfer != null) {
 					buttonTransfer.onClick.AddListener(ScienceRelay.Instance.onTransfer);
+				}
 			}
 
 			onDialogSpawn.Fire(dialog);

@@ -1,4 +1,5 @@
 ﻿#region license
+
 /*The MIT License (MIT)
 
 ScienceRelayData - A storage struct for science data to be transferred
@@ -23,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+
 #endregion
 
 namespace ScienceRelay
