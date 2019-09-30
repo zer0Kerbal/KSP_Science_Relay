@@ -39,31 +39,31 @@ using KSP.UI.TooltipTypes;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ScienceRelay
+namespace ScienceRelay.Source
 {
 	[KSPAddon(KSPAddon.Startup.Flight, false)]
 	public class ScienceRelay : MonoBehaviour
 	{
-		private static Sprite transferNormal;
-		private static Sprite transferHighlight;
-		private static Sprite transferActive;
-		private static bool spritesLoaded;
+		private static Sprite _transferNormal;
+		private static Sprite _transferHighlight;
+		private static Sprite _transferActive;
+		private static bool _spritesLoaded;
 		private static MethodInfo _occlusionMethod;
-		private static bool reflected;
-		private static bool CNConstellationChecked;
-		private static bool CNConstellationLoaded;
-		private List<KeyValuePair<Vessel, double>> connectedVessels = new List<KeyValuePair<Vessel, double>>();
-		private ExperimentResultDialogPage currentPage;
-		private readonly CommPath pathCache = new CommPath();
-		private readonly List<ScienceRelayData> queuedData = new List<ScienceRelayData>();
-		private ExperimentsResultDialog resultsDialog;
-		private ScienceRelayParameters settings;
-		private bool transferAll;
-		private Button transferButton;
-		private PopupDialog transferDialog;
+		private static bool _reflected;
+		private static bool _cnConstellationChecked;
+		private static bool _cnConstellationLoaded;
+		private List<KeyValuePair<Vessel, double>> _connectedVessels = new List<KeyValuePair<Vessel, double>>();
+		private ExperimentResultDialogPage _currentPage;
+		private readonly CommPath _pathCache = new CommPath();
+		private readonly List<ScienceRelayData> _queuedData = new List<ScienceRelayData>();
+		private ExperimentsResultDialog _resultsDialog;
+		private ScienceRelayParameters _settings;
+		private bool _transferAll;
+		private Button _transferButton;
+		private PopupDialog _transferDialog;
 
-		private string version;
-		private PopupDialog warningDialog;
+		private string _version;
+		private PopupDialog _warningDialog;
 
 		public static ScienceRelay Instance { get; private set; }
 
@@ -79,15 +79,15 @@ namespace ScienceRelay
 				return;
 			}
 
-			if (!reflected) {
+			if (!_reflected) {
 				assignReflection();
 			}
 
-			if (!CNConstellationChecked) {
+			if (!_cnConstellationChecked) {
 				CommNetConstellationCheck();
 			}
 
-			if (!spritesLoaded) {
+			if (!_spritesLoaded) {
 				loadSprite();
 			}
 
@@ -105,9 +105,9 @@ namespace ScienceRelay
 			GameEvents.onGameUnpause.Add(onUnpause);
 			GameEvents.OnGameSettingsApplied.Add(onSettingsApplied);
 
-			settings = HighLogic.CurrentGame.Parameters.CustomParams<ScienceRelayParameters>();
+			_settings = HighLogic.CurrentGame.Parameters.CustomParams<ScienceRelayParameters>();
 
-			if (settings == null) {
+			if (_settings == null) {
 				Instance = null;
 				Destroy(gameObject);
 			}
@@ -116,10 +116,10 @@ namespace ScienceRelay
 			var ainfoV = Attribute.GetCustomAttribute(assembly, typeof(AssemblyInformationalVersionAttribute)) as AssemblyInformationalVersionAttribute;
 			switch (ainfoV == null) {
 				case true:
-					version = "";
+					_version = "";
 					break;
 				default:
-					version = ainfoV.InformationalVersion;
+					_version = ainfoV.InformationalVersion;
 					break;
 			}
 		}
@@ -140,7 +140,7 @@ namespace ScienceRelay
 
 		private void onSettingsApplied()
 		{
-			settings = HighLogic.CurrentGame.Parameters.CustomParams<ScienceRelayParameters>();
+			_settings = HighLogic.CurrentGame.Parameters.CustomParams<ScienceRelayParameters>();
 		}
 
 		private void loadSprite()
@@ -153,32 +153,32 @@ namespace ScienceRelay
 				return;
 			}
 
-			transferNormal = Sprite.Create(normal, new Rect(0, 0, normal.width, normal.height), new Vector2(0.5f, 0.5f));
-			transferHighlight = Sprite.Create(highlight, new Rect(0, 0, highlight.width, highlight.height), new Vector2(0.5f, 0.5f));
-			transferActive = Sprite.Create(active, new Rect(0, 0, active.width, active.height), new Vector2(0.5f, 0.5f));
+			_transferNormal = Sprite.Create(normal, new Rect(0, 0, normal.width, normal.height), new Vector2(0.5f, 0.5f));
+			_transferHighlight = Sprite.Create(highlight, new Rect(0, 0, highlight.width, highlight.height), new Vector2(0.5f, 0.5f));
+			_transferActive = Sprite.Create(active, new Rect(0, 0, active.width, active.height), new Vector2(0.5f, 0.5f));
 
-			spritesLoaded = true;
+			_spritesLoaded = true;
 		}
 
 		private void onPause()
 		{
-			if (transferDialog != null) {
-				transferDialog.gameObject.SetActive(false);
+			if (_transferDialog != null) {
+				_transferDialog.gameObject.SetActive(false);
 			}
 
-			if (warningDialog != null) {
-				warningDialog.gameObject.SetActive(false);
+			if (_warningDialog != null) {
+				_warningDialog.gameObject.SetActive(false);
 			}
 		}
 
 		private void onUnpause()
 		{
-			if (transferDialog != null) {
-				transferDialog.gameObject.SetActive(true);
+			if (_transferDialog != null) {
+				_transferDialog.gameObject.SetActive(true);
 			}
 
-			if (warningDialog != null) {
-				warningDialog.gameObject.SetActive(true);
+			if (_warningDialog != null) {
+				_warningDialog.gameObject.SetActive(true);
 			}
 		}
 
@@ -202,35 +202,35 @@ namespace ScienceRelay
 				} else if (b.name == "ButtonNext") {
 					dialogListener.buttonNext = b;
 				} else if (b.name == "ButtonKeep") {
-					transferButton = Instantiate(b, b.transform.parent);
+					_transferButton = Instantiate(b, b.transform.parent);
 
-					transferButton.name = "ButtonTransfer";
+					_transferButton.name = "ButtonTransfer";
 
-					transferButton.onClick.RemoveAllListeners();
+					_transferButton.onClick.RemoveAllListeners();
 
-					var tooltip = transferButton.GetComponent<TooltipController_Text>();
+					var tooltip = _transferButton.GetComponent<TooltipController_Text>();
 
 					if (tooltip != null) {
 						tooltip.textString = Localizer.Format("#autoLOC_ScienceRelay_Tooltip");
 					}
 
-					if (spritesLoaded) {
-						var select = transferButton.GetComponent<Selectable>();
+					if (_spritesLoaded) {
+						var select = _transferButton.GetComponent<Selectable>();
 
 						if (select != null) {
-							select.image.sprite = transferNormal;
+							select.image.sprite = _transferNormal;
 							select.image.type = Image.Type.Simple;
 							select.transition = Selectable.Transition.SpriteSwap;
 
 							var state = select.spriteState;
-							state.highlightedSprite = transferHighlight;
-							state.pressedSprite = transferActive;
-							state.disabledSprite = transferActive;
+							state.highlightedSprite = _transferHighlight;
+							state.pressedSprite = _transferActive;
+							state.disabledSprite = _transferActive;
 							select.spriteState = state;
 						}
 					}
 
-					dialogListener.buttonTransfer = transferButton;
+					dialogListener.buttonTransfer = _transferButton;
 				}
 			}
 
@@ -243,9 +243,9 @@ namespace ScienceRelay
 				return;
 			}
 
-			resultsDialog = dialog;
+			_resultsDialog = dialog;
 
-			var buttons = resultsDialog.GetComponentsInChildren<Button>(true);
+			var buttons = _resultsDialog.GetComponentsInChildren<Button>(true);
 
 			for (var i = buttons.Length - 1; i >= 0; i--) {
 				var b = buttons[i];
@@ -258,29 +258,29 @@ namespace ScienceRelay
 					continue;
 				}
 
-				transferButton = b;
+				_transferButton = b;
 				break;
 			}
 
-			currentPage = resultsDialog.currentPage;
+			_currentPage = _resultsDialog.currentPage;
 
-			if (currentPage.pageData != null) {
-				currentPage.pageData.baseTransmitValue = currentPage.xmitDataScalar;
+			if (_currentPage.pageData != null) {
+				_currentPage.pageData.baseTransmitValue = _currentPage.xmitDataScalar;
 			}
 
-			transferButton.gameObject.SetActive(getConnectedVessels());
+			_transferButton.gameObject.SetActive(getConnectedVessels());
 		}
 
 		private void onClose(ExperimentsResultDialog dialog)
 		{
-			if (dialog == null || resultsDialog == null) {
+			if (dialog == null || _resultsDialog == null) {
 				return;
 			}
 
-			if (dialog == resultsDialog) {
-				resultsDialog = null;
-				transferButton = null;
-				currentPage = null;
+			if (dialog == _resultsDialog) {
+				_resultsDialog = null;
+				_transferButton = null;
+				_currentPage = null;
 			}
 
 			popupDismiss();
@@ -288,14 +288,14 @@ namespace ScienceRelay
 
 		public void onPageChange()
 		{
-			if (resultsDialog == null) {
+			if (_resultsDialog == null) {
 				return;
 			}
 
-			currentPage = resultsDialog.currentPage;
+			_currentPage = _resultsDialog.currentPage;
 
-			if (currentPage.pageData != null) {
-				currentPage.pageData.baseTransmitValue = currentPage.xmitDataScalar;
+			if (_currentPage.pageData != null) {
+				_currentPage.pageData.baseTransmitValue = _currentPage.xmitDataScalar;
 			}
 
 			popupDismiss();
@@ -303,31 +303,31 @@ namespace ScienceRelay
 
 		public void onTransfer()
 		{
-			if (resultsDialog == null) {
+			if (_resultsDialog == null) {
 				return;
 			}
 
-			if (currentPage == null) {
+			if (_currentPage == null) {
 				return;
 			}
 
-			if (currentPage.pageData == null) {
+			if (_currentPage.pageData == null) {
 				return;
 			}
 
-			if (connectedVessels.Count <= 0) {
+			if (_connectedVessels.Count <= 0) {
 				return;
 			}
 
-			transferAll = false;
+			_transferAll = false;
 
-			transferDialog = spawnDialog(currentPage);
+			_transferDialog = spawnDialog(_currentPage);
 		}
 
 		private void popupDismiss()
 		{
-			if (transferDialog != null) {
-				transferDialog.Dismiss();
+			if (_transferDialog != null) {
+				_transferDialog.Dismiss();
 			}
 		}
 
@@ -337,21 +337,21 @@ namespace ScienceRelay
 
 			dialog.Add(new DialogGUILabel(Localizer.Format("#autoLOC_ScienceRelay_Transmit", page.pageData.title)));
 
-			transferAll = false;
+			_transferAll = false;
 
-			if (resultsDialog.pages.Count > 1) {
+			if (_resultsDialog.pages.Count > 1) {
 				dialog.Add(new DialogGUIToggle(false,
 					Localizer.Format("#autoLOC_ScienceRelay_TransmitAll"),
 					delegate {
-						transferAll = !transferAll;
+						_transferAll = !_transferAll;
 					})
 				);
 			}
 
 			var vessels = new List<DialogGUIHorizontalLayout>();
 
-			for (var i = connectedVessels.Count - 1; i >= 0; i--) {
-				var pair = connectedVessels[i];
+			for (var i = _connectedVessels.Count - 1; i >= 0; i--) {
+				var pair = _connectedVessels[i];
 
 				var v = pair.Key;
 
@@ -359,7 +359,7 @@ namespace ScienceRelay
 
 				DialogGUILabel label = null;
 
-				if (settings.transmissionBoost) {
+				if (_settings.transmissionBoost) {
 					var transmit = string.Format("Xmit: {0:P0}", page.xmitDataScalar * (1 + boost));
 
 					if (boost > 0) {
@@ -371,7 +371,7 @@ namespace ScienceRelay
 
 				DialogGUIBase button = null;
 
-				if (settings.showTransmitWarning && page.showTransmitWarning) {
+				if (_settings.showTransmitWarning && page.showTransmitWarning) {
 					button = new DialogGUIButton(
 						v.vesselName,
 						delegate {
@@ -429,9 +429,9 @@ namespace ScienceRelay
 
 			dialog.Add(new DialogGUISpace(4));
 
-			dialog.Add(new DialogGUIHorizontalLayout(new DialogGUIFlexibleSpace(), new DialogGUIButton(Localizer.Format("#autoLOC_190768"), popupDismiss), new DialogGUIFlexibleSpace(), new DialogGUILabel(version)));
+			dialog.Add(new DialogGUIHorizontalLayout(new DialogGUIFlexibleSpace(), new DialogGUIButton(Localizer.Format("#autoLOC_190768"), popupDismiss), new DialogGUIFlexibleSpace(), new DialogGUILabel(_version)));
 
-			var resultRect = resultsDialog.GetComponent<RectTransform>();
+			var resultRect = _resultsDialog.GetComponent<RectTransform>();
 
 			var pos = new Rect(0.5f, 0.5f, 300, 300);
 
@@ -464,7 +464,7 @@ namespace ScienceRelay
 
 		private void spawnWarningDialog(ScienceRelayData data, string message)
 		{
-			warningDialog = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog(
+			_warningDialog = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new MultiOptionDialog(
 					"ScienceRelayWarning",
 					Localizer.Format("#autoLOC_6001489", message),
 					Localizer.Format("#autoLOC_236416"),
@@ -486,7 +486,7 @@ namespace ScienceRelay
 				return f;
 			}
 
-			if (settings.requireMPLForBoost && !VesselUtilities.VesselHasModuleName("ModuleScienceLab", target)) {
+			if (_settings.requireMPLForBoost && !VesselUtilities.VesselHasModuleName("ModuleScienceLab", target)) {
 				return f;
 			}
 
@@ -523,7 +523,7 @@ namespace ScienceRelay
 
 			f -= 1;
 
-			f = (1 - settings.transmissionPenalty) * f;
+			f = (1 - _settings.transmissionPenalty) * f;
 
 			return f;
 		}
@@ -532,8 +532,8 @@ namespace ScienceRelay
 		{
 			//if (resultsDialog != null) resultsDialog.Dismiss();  
 			// JLB -- Leaves dialog up for other experiments
-			if (resultsDialog != null && transferAll) resultsDialog.Dismiss();
-			if (resultsDialog != null && !transferAll) resultsDialog.currentPage.OnKeepData(resultsDialog.currentPage.pageData);
+			if (_resultsDialog != null && _transferAll) _resultsDialog.Dismiss();
+			if (_resultsDialog != null && !_transferAll) _resultsDialog.currentPage.OnKeepData(_resultsDialog.currentPage.pageData);
 
 			if (RelayData._host == null || RelayData._data == null || RelayData._target == null || RelayData._source == null) {
 				return;
@@ -541,9 +541,9 @@ namespace ScienceRelay
 
 			var data = new List<ScienceRelayData>();
 
-			if (transferAll) {
-				for (var i = resultsDialog.pages.Count - 1; i >= 0; i--) {
-					var page = resultsDialog.pages[i];
+			if (_transferAll) {
+				for (var i = _resultsDialog.pages.Count - 1; i >= 0; i--) {
+					var page = _resultsDialog.pages[i];
 
 					if (page == null) {
 						continue;
@@ -571,7 +571,7 @@ namespace ScienceRelay
 					data.Add(relayData);
 				}
 			} else {
-				RelayData._data.baseTransmitValue = currentPage.xmitDataScalar;
+				RelayData._data.baseTransmitValue = _currentPage.xmitDataScalar;
 				data.Add(RelayData);
 			}
 
@@ -625,7 +625,7 @@ namespace ScienceRelay
 
 					bestTransmitter.TransmitData(new List<ScienceData> {d});
 
-					queuedData.Add(data[i]);
+					_queuedData.Add(data[i]);
 
 					if (hostContainer != null) {
 						hostContainer.DumpData(d);
@@ -648,8 +648,8 @@ namespace ScienceRelay
 				return;
 			}
 
-			for (var i = queuedData.Count - 1; i >= 0; i--) {
-				var d = queuedData[i];
+			for (var i = _queuedData.Count - 1; i >= 0; i--) {
+				var d = _queuedData[i];
 
 				if (d._data.subjectID != data.subjectID) {
 					continue;
@@ -701,7 +701,7 @@ namespace ScienceRelay
 						4, ScreenMessageStyle.UPPER_LEFT);
 				}
 
-				queuedData.Remove(d);
+				_queuedData.Remove(d);
 
 				break;
 			}
@@ -972,9 +972,9 @@ namespace ScienceRelay
 
 		private bool getConnectedVessels()
 		{
-			connectedVessels.Clear();
+			_connectedVessels.Clear();
 
-			if (resultsDialog == null) {
+			if (_resultsDialog == null) {
 				return false;
 			}
 
@@ -988,7 +988,7 @@ namespace ScienceRelay
 
 			if (CommNetScenario.CommNetEnabled) // && !CNConstellationLoaded)
 			{
-				connectedVessels = getConnectedVessels(vessel);
+				_connectedVessels = getConnectedVessels(vessel);
 			} else {
 				//RelayLog("No connection status required");
 
@@ -1009,7 +1009,7 @@ namespace ScienceRelay
 						continue;
 					}
 
-					if (settings.requireMPL && !VesselUtilities.VesselHasModuleName("ModuleScienceLab", v)) {
+					if (_settings.requireMPL && !VesselUtilities.VesselHasModuleName("ModuleScienceLab", v)) {
 						continue;
 					}
 
@@ -1017,13 +1017,13 @@ namespace ScienceRelay
 						continue;
 					}
 
-					connectedVessels.Add(new KeyValuePair<Vessel, double>(v, 0));
+					_connectedVessels.Add(new KeyValuePair<Vessel, double>(v, 0));
 				}
 			}
 
-			RelayLog("Connected vessels detected for science transmission: {0}", connectedVessels.Count);
+			RelayLog("Connected vessels detected for science transmission: {0}", _connectedVessels.Count);
 
-			return connectedVessels.Count > 0;
+			return _connectedVessels.Count > 0;
 		}
 
 		private List<KeyValuePair<Vessel, double>> getConnectedVessels(Vessel v)
@@ -1038,7 +1038,7 @@ namespace ScienceRelay
 				var source = v.connection.Comm;
 
 				if (source != null) {
-					if (!settings.requireRelay) {
+					if (!_settings.requireRelay) {
 						checkNodes.Add(new KeyValuePair<CommNode, double>(source, 1));
 					}
 
@@ -1078,29 +1078,29 @@ namespace ScienceRelay
 								}
 							}
 
-							if (!net.FindPath(source, pathCache, otherVessel.connection.Comm)) {
+							if (!net.FindPath(source, _pathCache, otherVessel.connection.Comm)) {
 								continue;
 							}
 
-							if (pathCache == null) {
+							if (_pathCache == null) {
 								continue;
 							}
 
-							if (pathCache.Count <= 0) {
+							if (_pathCache.Count <= 0) {
 								continue;
 							}
 
 							//RelayLog("Vessel network path valid");
 
-							if (!settings.requireRelay) {
+							if (!_settings.requireRelay) {
 								//RelayLog("Searching for direct paths");
 
 								double totalStrength = 1;
 
-								var l = pathCache.Count;
+								var l = _pathCache.Count;
 
 								for (var j = 0; j < l; j++) {
-									var link = pathCache[j];
+									var link = _pathCache[j];
 
 									totalStrength *= link.signalStrength;
 
@@ -1116,7 +1116,7 @@ namespace ScienceRelay
 								}
 							}
 
-							if (settings.requireMPL && !VesselUtilities.VesselHasModuleName("ModuleScienceLab", otherVessel)) {
+							if (_settings.requireMPL && !VesselUtilities.VesselHasModuleName("ModuleScienceLab", otherVessel)) {
 								continue;
 							}
 
@@ -1124,7 +1124,7 @@ namespace ScienceRelay
 								continue;
 							}
 
-							var s = pathCache.signalStrength;
+							var s = _pathCache.signalStrength;
 
 							s = source.scienceCurve.Evaluate(s);
 
@@ -1133,7 +1133,7 @@ namespace ScienceRelay
 							connections.Add(new KeyValuePair<Vessel, double>(otherVessel, s + 1));
 						}
 
-						if (!settings.requireRelay) {
+						if (!_settings.requireRelay) {
 							//RelayLog("Checking direct connections...");
 
 							for (var k = checkNodes.Count - 1; k >= 0; k--) {
@@ -1176,7 +1176,7 @@ namespace ScienceRelay
 
 									//RelayLog("Antenna valid for vessel\n---- {0} ----", otherVessel.vesselName);
 
-									if (settings.requireMPL && !VesselUtilities.VesselHasModuleName("ModuleScienceLab", otherVessel)) {
+									if (_settings.requireMPL && !VesselUtilities.VesselHasModuleName("ModuleScienceLab", otherVessel)) {
 										continue;
 									}
 
@@ -1330,19 +1330,19 @@ namespace ScienceRelay
 				RelayLog("Error in assigning occlusion method; Science Relay may not be able to accurately determine vessel connectivity\n{0}", e);
 			}
 
-			reflected = true;
+			_reflected = true;
 		}
 
 		private void CommNetConstellationCheck()
 		{
 			var assembly = AssemblyLoader.loadedAssemblies.FirstOrDefault(a => a.assembly.GetName().Name.StartsWith("CommNetConstellation"));
 
-			CNConstellationLoaded = assembly != null;
+			_cnConstellationLoaded = assembly != null;
 
 			//if (CNConstellationLoaded)
 			//	RelayLog("CommNet Constellation addon detected; Science Relay disabling CommNet connection status integration");
 
-			CNConstellationChecked = true;
+			_cnConstellationChecked = true;
 		}
 
 		public static void RelayLog(string s, params object[] o)

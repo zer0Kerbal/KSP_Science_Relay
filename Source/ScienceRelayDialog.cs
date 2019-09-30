@@ -31,7 +31,7 @@ using KSP.UI.Screens.Flight.Dialogs;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ScienceRelay
+namespace ScienceRelay.Source
 {
 	public class ScienceRelayDialog : MonoBehaviour
 	{
@@ -53,17 +53,17 @@ namespace ScienceRelay
 				return;
 			}
 
-			if (ScienceRelay.Instance != null) {
+			if (Source.ScienceRelay.Instance != null) {
 				if (buttonNext != null) {
-					buttonNext.onClick.AddListener(ScienceRelay.Instance.onPageChange);
+					buttonNext.onClick.AddListener(Source.ScienceRelay.Instance.onPageChange);
 				}
 
 				if (buttonPrev != null) {
-					buttonPrev.onClick.AddListener(ScienceRelay.Instance.onPageChange);
+					buttonPrev.onClick.AddListener(Source.ScienceRelay.Instance.onPageChange);
 				}
 
 				if (buttonTransfer != null) {
-					buttonTransfer.onClick.AddListener(ScienceRelay.Instance.onTransfer);
+					buttonTransfer.onClick.AddListener(Source.ScienceRelay.Instance.onTransfer);
 				}
 			}
 

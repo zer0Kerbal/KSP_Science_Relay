@@ -29,7 +29,7 @@ THE SOFTWARE.
 
 using System.Reflection;
 
-namespace ScienceRelay
+namespace ScienceRelay.Source
 {
 	public class ScienceRelayParameters : GameParameters.CustomParameterNode
 	{

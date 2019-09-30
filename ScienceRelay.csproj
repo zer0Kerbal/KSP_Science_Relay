@@ -65,6 +65,7 @@
     <Compile Include="Source\ScienceRelayParameters.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".gitignore" />
     <Content Include="GameData\ScienceRelay\License.txt" />
     <Content Include="GameData\ScienceRelay\Resources\Relay_Active.png" />
     <Content Include="GameData\ScienceRelay\Resources\Relay_Highlight.png" />
@@ -73,6 +74,8 @@
   <ItemGroup>
     <None Include="GameData\ScienceRelay\Resources\Localization\ScienceRelayLocalization.cfg" />
     <None Include="GameData\ScienceRelay\ScienceRelay.version" />
+    <None Include="LICENSE" />
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

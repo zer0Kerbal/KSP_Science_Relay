@@ -27,7 +27,7 @@ THE SOFTWARE.
 
 #endregion
 
-namespace ScienceRelay
+namespace ScienceRelay.Source
 {
 	public struct ScienceRelayData
 	{
