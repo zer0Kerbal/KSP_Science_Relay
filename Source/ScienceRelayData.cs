@@ -31,10 +31,10 @@ namespace ScienceRelay.Source
 {
 	public struct ScienceRelayData
 	{
-		public ScienceData _data;
-		public Part _host;
-		public float _boost;
-		public Vessel _source;
-		public Vessel _target;
+		public ScienceData data;
+		public Part host;
+		public float boost;
+		public Vessel source;
+		public Vessel target;
 	}
 }

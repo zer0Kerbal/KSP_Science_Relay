@@ -33,6 +33,7 @@ using System.Linq;
 using System.Reflection;
 using CommNet;
 using FinePrint.Utilities;
+using JetBrains.Annotations;
 using KSP.Localization;
 using KSP.UI.Screens.Flight.Dialogs;
 using KSP.UI.TooltipTypes;
@@ -67,6 +68,7 @@ namespace ScienceRelay.Source
 
 		public static ScienceRelay Instance { get; private set; }
 
+		[UsedImplicitly]
 		private void Awake()
 		{
 			if (HighLogic.CurrentGame.Mode == Game.Modes.SANDBOX) {
@@ -88,22 +90,23 @@ namespace ScienceRelay.Source
 			}
 
 			if (!_spritesLoaded) {
-				loadSprite();
+				LoadSprite();
 			}
 
 			Instance = this;
 
-			processPrefab();
+			ProcessPrefab();
 		}
 
+		[UsedImplicitly]
 		private void Start()
 		{
-			ScienceRelayDialog.onDialogSpawn.Add(onSpawn);
-			ScienceRelayDialog.onDialogClose.Add(onClose);
+			ScienceRelayDialog.onDialogSpawn.Add(OnSpawn);
+			ScienceRelayDialog.onDialogClose.Add(OnClose);
 			GameEvents.OnTriggeredDataTransmission.Add(onTriggeredData);
-			GameEvents.onGamePause.Add(onPause);
-			GameEvents.onGameUnpause.Add(onUnpause);
-			GameEvents.OnGameSettingsApplied.Add(onSettingsApplied);
+			GameEvents.onGamePause.Add(OnPause);
+			GameEvents.onGameUnpause.Add(OnUnpause);
+			GameEvents.OnGameSettingsApplied.Add(OnSettingsApplied);
 
 			_settings = HighLogic.CurrentGame.Parameters.CustomParams<ScienceRelayParameters>();
 
@@ -113,37 +116,31 @@ namespace ScienceRelay.Source
 			}
 
 			var assembly = AssemblyLoader.loadedAssemblies.GetByAssembly(Assembly.GetExecutingAssembly()).assembly;
-			var ainfoV = Attribute.GetCustomAttribute(assembly, typeof(AssemblyInformationalVersionAttribute)) as AssemblyInformationalVersionAttribute;
-			switch (ainfoV == null) {
-				case true:
-					_version = "";
-					break;
-				default:
-					_version = ainfoV.InformationalVersion;
-					break;
-			}
+			var assembly_informational_version_attribute = Attribute.GetCustomAttribute(assembly, typeof(AssemblyInformationalVersionAttribute)) as AssemblyInformationalVersionAttribute;
+			_version = assembly_informational_version_attribute != null ? assembly_informational_version_attribute.InformationalVersion : "";
 		}
 
+		[UsedImplicitly]
 		private void OnDestroy()
 		{
 			Instance = null;
 
 			popupDismiss();
 
-			ScienceRelayDialog.onDialogSpawn.Remove(onSpawn);
-			ScienceRelayDialog.onDialogClose.Remove(onClose);
+			ScienceRelayDialog.onDialogSpawn.Remove(OnSpawn);
+			ScienceRelayDialog.onDialogClose.Remove(OnClose);
 			GameEvents.OnTriggeredDataTransmission.Remove(onTriggeredData);
-			GameEvents.onGamePause.Remove(onPause);
-			GameEvents.onGameUnpause.Remove(onUnpause);
-			GameEvents.OnGameSettingsApplied.Remove(onSettingsApplied);
+			GameEvents.onGamePause.Remove(OnPause);
+			GameEvents.onGameUnpause.Remove(OnUnpause);
+			GameEvents.OnGameSettingsApplied.Remove(OnSettingsApplied);
 		}
 
-		private void onSettingsApplied()
+		private void OnSettingsApplied()
 		{
 			_settings = HighLogic.CurrentGame.Parameters.CustomParams<ScienceRelayParameters>();
 		}
 
-		private void loadSprite()
+		private void LoadSprite()
 		{
 			var normal = GameDatabase.Instance.GetTexture("ScienceRelay/Resources/Relay_Normal", false);
 			var highlight = GameDatabase.Instance.GetTexture("ScienceRelay/Resources/Relay_Highlight", false);
@@ -160,7 +157,7 @@ namespace ScienceRelay.Source
 			_spritesLoaded = true;
 		}
 
-		private void onPause()
+		private void OnPause()
 		{
 			if (_transferDialog != null) {
 				_transferDialog.gameObject.SetActive(false);
@@ -171,7 +168,7 @@ namespace ScienceRelay.Source
 			}
 		}
 
-		private void onUnpause()
+		private void OnUnpause()
 		{
 			if (_transferDialog != null) {
 				_transferDialog.gameObject.SetActive(true);
@@ -182,7 +179,7 @@ namespace ScienceRelay.Source
 			}
 		}
 
-		private void processPrefab()
+		private void ProcessPrefab()
 		{
 			var prefab = AssetBase.GetPrefab("ScienceResultsDialog");
 
@@ -190,7 +187,7 @@ namespace ScienceRelay.Source
 				return;
 			}
 
-			var dialogListener = prefab.gameObject.AddOrGetComponent<ScienceRelayDialog>();
+			var dialog_listener = prefab.gameObject.AddOrGetComponent<ScienceRelayDialog>();
 
 			var buttons = prefab.GetComponentsInChildren<Button>(true);
 
@@ -198,9 +195,9 @@ namespace ScienceRelay.Source
 				var b = buttons[i];
 
 				if (b.name == "ButtonPrev") {
-					dialogListener.buttonPrev = b;
+					dialog_listener.buttonPrev = b;
 				} else if (b.name == "ButtonNext") {
-					dialogListener.buttonNext = b;
+					dialog_listener.buttonNext = b;
 				} else if (b.name == "ButtonKeep") {
 					_transferButton = Instantiate(b, b.transform.parent);
 
@@ -230,14 +227,14 @@ namespace ScienceRelay.Source
 						}
 					}
 
-					dialogListener.buttonTransfer = _transferButton;
+					dialog_listener.buttonTransfer = _transferButton;
 				}
 			}
 
 			RelayLog("Science results prefab processed...");
 		}
 
-		private void onSpawn(ExperimentsResultDialog dialog)
+		private void OnSpawn(ExperimentsResultDialog dialog)
 		{
 			if (dialog == null) {
 				return;
@@ -271,7 +268,7 @@ namespace ScienceRelay.Source
 			_transferButton.gameObject.SetActive(getConnectedVessels());
 		}
 
-		private void onClose(ExperimentsResultDialog dialog)
+		private void OnClose(ExperimentsResultDialog dialog)
 		{
 			if (dialog == null || _resultsDialog == null) {
 				return;
@@ -286,7 +283,7 @@ namespace ScienceRelay.Source
 			popupDismiss();
 		}
 
-		public void onPageChange()
+		public void OnPageChange()
 		{
 			if (_resultsDialog == null) {
 				return;
@@ -378,11 +375,11 @@ namespace ScienceRelay.Source
 							spawnWarningDialog(
 								new ScienceRelayData
 								{
-									_data = page.pageData,
-									_host = page.host,
-									_boost = boost,
-									_source = FlightGlobals.ActiveVessel,
-									_target = v
+									data = page.pageData,
+									host = page.host,
+									boost = boost,
+									source = FlightGlobals.ActiveVessel,
+									target = v
 								},
 								page.transmitWarningMessage);
 						},
@@ -395,11 +392,11 @@ namespace ScienceRelay.Source
 						transferToVessel,
 						new ScienceRelayData
 						{
-							_data = page.pageData,
-							_host = page.host,
-							_boost = boost,
-							_source = FlightGlobals.ActiveVessel,
-							_target = v
+							data = page.pageData,
+							host = page.host,
+							boost = boost,
+							source = FlightGlobals.ActiveVessel,
+							target = v
 						},
 						true);
 
@@ -535,7 +532,7 @@ namespace ScienceRelay.Source
 			if (_resultsDialog != null && _transferAll) _resultsDialog.Dismiss();
 			if (_resultsDialog != null && !_transferAll) _resultsDialog.currentPage.OnKeepData(_resultsDialog.currentPage.pageData);
 
-			if (RelayData._host == null || RelayData._data == null || RelayData._target == null || RelayData._source == null) {
+			if (RelayData.host == null || RelayData.data == null || RelayData.target == null || RelayData.source == null) {
 				return;
 			}
 
@@ -559,26 +556,26 @@ namespace ScienceRelay.Source
 
 					var relayData = new ScienceRelayData
 					{
-						_data = page.pageData,
-						_host = page.host,
-						_boost = signalBoost(RelayData._boost + 1, RelayData._target, page.pageData, page.xmitDataScalar),
-						_target = RelayData._target,
-						_source = RelayData._source
+						data = page.pageData,
+						host = page.host,
+						boost = signalBoost(RelayData.boost + 1, RelayData.target, page.pageData, page.xmitDataScalar),
+						target = RelayData.target,
+						source = RelayData.source
 					};
 
-					relayData._data.baseTransmitValue = page.xmitDataScalar;
+					relayData.data.baseTransmitValue = page.xmitDataScalar;
 
 					data.Add(relayData);
 				}
 			} else {
-				RelayData._data.baseTransmitValue = _currentPage.xmitDataScalar;
+				RelayData.data.baseTransmitValue = _currentPage.xmitDataScalar;
 				data.Add(RelayData);
 			}
 
 			for (var i = data.Count - 1; i >= 0; i--) {
-				var d = data[i]._data;
+				var d = data[i].data;
 
-				var host = data[i]._host;
+				var host = data[i].host;
 
 				var containers = host.FindModulesImplementing<IScienceDataContainer>();
 
@@ -609,7 +606,7 @@ namespace ScienceRelay.Source
 					}
 				}
 
-				var bestTransmitter = ScienceUtil.GetBestTransmitter(RelayData._source);
+				var bestTransmitter = ScienceUtil.GetBestTransmitter(RelayData.source);
 				//IScienceDataTransmitter bestTransmitter = ScienceUtil.GetBestTransmitter(RelayData._source.FindPartModulesImplementing<IScienceDataTransmitter>());
 
 				if (bestTransmitter == null) {
@@ -619,7 +616,7 @@ namespace ScienceRelay.Source
 						ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238507"), 3, ScreenMessageStyle.UPPER_CENTER);
 					}
 				} else {
-					RelayLog("Attempting to transmit science data: [{0}] to vessel: [{1}] at boost level: {2:P2}", data[i]._data.title, data[i]._target.vesselName, data[i]._boost);
+					RelayLog("Attempting to transmit science data: [{0}] to vessel: [{1}] at boost level: {2:P2}", data[i].data.title, data[i].target.vesselName, data[i].boost);
 
 					d.triggered = true;
 
@@ -651,20 +648,20 @@ namespace ScienceRelay.Source
 			for (var i = _queuedData.Count - 1; i >= 0; i--) {
 				var d = _queuedData[i];
 
-				if (d._data.subjectID != data.subjectID) {
+				if (d.data.subjectID != data.subjectID) {
 					continue;
 				}
 
 				if (aborted) {
-					RelayLog("Science data: [{0}] transmission to vessel: [{1}] aborted, returning to sender: [{2}]", d._data.title, d._target.vesselName, d._source.vesselName);
+					RelayLog("Science data: [{0}] transmission to vessel: [{1}] aborted, returning to sender: [{2}]", d.data.title, d.target.vesselName, d.source.vesselName);
 					data.triggered = false;
 					return;
 				}
 
-				if (!finishTransfer(d._target, d._data, d._boost)) {
-					RelayLog("Data transfer failed; returning to sender: [{0}]", d._source.vesselName);
+				if (!finishTransfer(d.target, d.data, d.boost)) {
+					RelayLog("Data transfer failed; returning to sender: [{0}]", d.source.vesselName);
 
-					var host = d._host;
+					var host = d.host;
 
 					var containers = host.FindModulesImplementing<IScienceDataContainer>();
 
@@ -696,8 +693,8 @@ namespace ScienceRelay.Source
 						hostContainer.ReturnData(data);
 					}
 				} else {
-					RelayLog("Science data: [{0}] successfully transmitted to vessel: [{1}] from vessel: [{2}]", d._data.title, d._target.vesselName, d._source.vesselName);
-					ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238419", d._target.vesselName, data.dataAmount.ToString("F0"), data.title),
+					RelayLog("Science data: [{0}] successfully transmitted to vessel: [{1}] from vessel: [{2}]", d.data.title, d.target.vesselName, d.source.vesselName);
+					ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238419", d.target.vesselName, data.dataAmount.ToString("F0"), data.title),
 						4, ScreenMessageStyle.UPPER_LEFT);
 				}
 

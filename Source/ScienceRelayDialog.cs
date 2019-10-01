@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 #endregion
 
+using JetBrains.Annotations;
 using KSP.UI.Screens.Flight.Dialogs;
 using UnityEngine;
 using UnityEngine.UI;
@@ -42,37 +43,39 @@ namespace ScienceRelay.Source
 		public Button buttonPrev;
 		public Button buttonTransfer;
 
-		private ExperimentsResultDialog dialog;
+		private ExperimentsResultDialog _dialog;
 
+		[UsedImplicitly]
 		private void Start()
 		{
-			dialog = gameObject.GetComponentInParent<ExperimentsResultDialog>();
+			_dialog = gameObject.GetComponentInParent<ExperimentsResultDialog>();
 
-			if (dialog == null) {
+			if (_dialog == null) {
 				Destroy(this);
 				return;
 			}
 
-			if (Source.ScienceRelay.Instance != null) {
+			if (ScienceRelay.Instance != null) {
 				if (buttonNext != null) {
-					buttonNext.onClick.AddListener(Source.ScienceRelay.Instance.onPageChange);
+					buttonNext.onClick.AddListener(ScienceRelay.Instance.OnPageChange);
 				}
 
 				if (buttonPrev != null) {
-					buttonPrev.onClick.AddListener(Source.ScienceRelay.Instance.onPageChange);
+					buttonPrev.onClick.AddListener(ScienceRelay.Instance.OnPageChange);
 				}
 
 				if (buttonTransfer != null) {
-					buttonTransfer.onClick.AddListener(Source.ScienceRelay.Instance.onTransfer);
+					buttonTransfer.onClick.AddListener(ScienceRelay.Instance.onTransfer);
 				}
 			}
 
-			onDialogSpawn.Fire(dialog);
+			onDialogSpawn.Fire(_dialog);
 		}
 
+		[UsedImplicitly]
 		private void OnDestroy()
 		{
-			onDialogClose.Fire(dialog);
+			onDialogClose.Fire(_dialog);
 		}
 	}
 }
