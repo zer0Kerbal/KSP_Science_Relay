@@ -1,2 +1,6 @@
-# KSP_Science_Relay
-A KSP addon to allow for the direct transmission of science from one vessel to another
+# Science Relay
+Allows for the direct transmission of science from one vessel to another. An addon for Kerbal Space Program.
+
+
+
+Expat-MIT License
